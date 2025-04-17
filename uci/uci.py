@@ -24,7 +24,7 @@ class UCI:
         elif line == "d":
             print(self.board)
         else:
-            pass
+            print(f"Unknown command: {line}")
 
     def set_position(self, line):
         line_parts = line.split()

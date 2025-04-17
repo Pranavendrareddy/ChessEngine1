@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7a7ae09a-3a9e-477e-8e39-5c9a7dbd6028" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_engine.bat" beforeDir="false" afterPath="$PROJECT_DIR$/run_engine.bat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/uci/uci.py" beforeDir="false" afterPath="$PROJECT_DIR$/uci/uci.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,12 +31,12 @@
     &quot;assignee&quot;: &quot;Pranavendrareddy&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Pranavendrareddy/ChessEngine1.git",
-    "accountId": "eb7e6d08-7604-437f-aba3-23d3d9b473d6"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Pranavendrareddy/ChessEngine1.git&quot;,
+    &quot;accountId&quot;: &quot;eb7e6d08-7604-437f-aba3-23d3d9b473d6&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -76,15 +78,19 @@
       <option name="presentableId" value="Default" />
       <updated>1744826634418</updated>
       <workItem from="1744826635349" duration="22138000" />
-      <workItem from="1744923150615" duration="43000" />
+      <workItem from="1744923150615" duration="88000" />
+      <workItem from="1744923810469" duration="3180000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.bat" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/ChessEngine1$main.coverage" NAME="main Coverage Results" MODIFIED="1744913146495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ChessEngine1$main.coverage" NAME="main Coverage Results" MODIFIED="1744926661122" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ChessEngine1$test_chesspy.coverage" NAME="test_chesspy Coverage Results" MODIFIED="1744828097357" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
     <SUITE FILE_PATH="coverage/ChessEngine1$uci.coverage" NAME="uci Coverage Results" MODIFIED="1744908437982" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/uci" />
   </component>
