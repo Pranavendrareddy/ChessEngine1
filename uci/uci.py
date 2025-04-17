@@ -21,6 +21,8 @@ class UCI:
             self.board.reset()
         elif line == "quit":
             exit()
+        else:
+            pass
 
     def set_position(self, line):
         line_parts = line.split()
