@@ -21,6 +21,8 @@ class UCI:
             self.board.reset()
         elif line == "quit":
             exit()
+        elif line == "d":
+            print(self.board)
         else:
             pass
 
