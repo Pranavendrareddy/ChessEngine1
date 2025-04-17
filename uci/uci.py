@@ -17,6 +17,8 @@ class UCI:
             self.set_position(line)
         elif line.startswith("go"):
             self.go()
+        elif line == "ucinewgame":
+            self.board.reset()
         elif line == "quit":
             exit()
 
