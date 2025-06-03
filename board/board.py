@@ -4,6 +4,7 @@ class ChessBoard:
     def __init__(self):
         self.board = chess.Board()
 
+    # Tout cela n'est pas forcément utile, la libraire qui a tout
     def set_fen(self, fen):
         self.board.set_fen(fen)
 
