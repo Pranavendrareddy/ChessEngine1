@@ -1,15 +1,26 @@
 from board.board import ChessBoard
 from engine.minimax import MinimaxEngine
 from engine.random import RandomEngine
+import time
 
 class UCI:
     def __init__(self):
         self.board = ChessBoard()
         self.engine = MinimaxEngine(self.board)
+        #for the most recent move
+        self.move_time = 0
+        self.positions_evaluated = 0
 
     def handle_command(self, line):
+        #personal use
         if line == "printboard":
             print(self.board.board)
+        elif line == "movetime":
+            print(self.move_time)
+        elif line == "evalpos":
+            print(self.positions_evaluated)
+
+        #uci
         if line == "uci":
             print("id name Pranav")
             print("id author ChessEngine1")
@@ -43,7 +54,11 @@ class UCI:
                 self.board.uci_move(move)
 
     def go(self):
+        start_time = time.time()
         move = self.engine.make_move()
+        end_time = time.time()
+        self.move_time = end_time - start_time
+        self.positions_evaluated = self.engine.nodes_evaluated
         if move is not None:
             self.board.push(move)
             print(f"bestmove {self.board.uci(move)}")
