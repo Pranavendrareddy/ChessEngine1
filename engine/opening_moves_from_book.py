@@ -1,13 +1,14 @@
-from board.board import ChessBoard
 import random
+import chess
 
 class Book_opening:
     def __init__(self):
+        self.startfen = ''
         self.opening_book = self._load_opening_book()
 
     def _load_opening_book(self, path="resources/opening_book.txt"):
         opening_book = {}
-        with open(path, "r") as f:
+        with open(path) as f:
             lines = f.readlines()
 
         current_fen = None
@@ -16,6 +17,9 @@ class Book_opening:
             if line.startswith("pos"):
                 current_fen = line[4:]
                 opening_book[current_fen] = []
+                if self.startfen == '':
+                    self.startfen = current_fen
+
             elif current_fen and line:
                 move, freq = line.split()
                 opening_book[current_fen].append((move, int(freq)))
@@ -23,11 +27,12 @@ class Book_opening:
         return opening_book
 
     def opening_move(self, board):
-        fen = board.get_fen()
+
+        fen = board.get_fen()[:-4]
         if fen in self.opening_book:
             moves = self.opening_book[fen]
-            move = random.choice(moves)
-            return move
+            move_str, freq = random.choice(moves)
+            return chess.Move.from_uci(move_str)
         return None
 
 
