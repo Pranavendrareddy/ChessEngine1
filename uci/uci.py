@@ -22,8 +22,8 @@ class UCI:
 
         #uci
         if line == "uci":
-            print("id name Pranav")
-            print("id author ChessEngine1")
+            print("id name ChessEngine1")
+            print("id author Pranav")
             print("uciok")
         elif line == "isready":
             print("readyok")

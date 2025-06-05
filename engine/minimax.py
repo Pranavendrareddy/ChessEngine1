@@ -37,7 +37,7 @@ class MinimaxEngine:
         self.nodes_evaluated += 1
         board = self.board.board
         if board.is_checkmate():
-            return -math.inf if board.turn else math.inf
+            return -99999 if board.turn else 99999 #inf doesn't work, because gives up
         if board.is_stalemate() or board.is_insufficient_material():
             return 0
 

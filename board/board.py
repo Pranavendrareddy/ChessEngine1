@@ -6,7 +6,7 @@ class ChessBoard:
 
     # Tout cela n'est pas forcément utile, la libraire a tout
     def set_fen(self, fen):
-        self.board.set_fen(fen)
+        self.board.set_fen(fen) 
 
     def get_fen(self):
         return self.board.fen()
