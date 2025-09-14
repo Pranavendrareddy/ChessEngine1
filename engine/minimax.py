@@ -3,17 +3,21 @@ from board.board import ChessBoard
 from engine.opening_moves_from_book import Book_opening
 from engine.piece_maps import Piece_map
 import chess
+import time
 
 Piece_values = {chess.PAWN: 100, chess.KNIGHT: 300, chess.BISHOP: 300, chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000}
 
 class MinimaxEngine:
-    def __init__(self, board: ChessBoard, depth: int=2):
+    def __init__(self, board: ChessBoard, depth: int=3, time_limit: float=None):
         self.board = board
         self.depth = depth
         self.nodes_evaluated = 0
-        self.order_moves = False
+        self.order_moves = True
         self.ending = False
         self.opening = True
+        self.pv_move = None
+        self.time_limit = time_limit
+        self.start_time = None
         self.book_opening = Book_opening()
 
     def make_move(self):
@@ -25,13 +29,30 @@ class MinimaxEngine:
                 return opening_move_choice
 
 
-
-        self.order_moves = True
         self.nodes_evaluated = 0
+        best_move = None
+        best_eval = -math.inf if self.board.board.turn else math.inf
+        self.start_time = time.time()
 
-        best_eval, best_move = self._minimax_pruning(self.depth, -math.inf, math.inf, self.board.board.turn)
+        for current_depth in range(1, self.depth + 1):
+
+            if self._time_exceeded():
+                break
+            eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
+            if move is not None:
+                best_eval = eval
+                best_move = move
+                self.pv_move = move
+
+        #best_eval, best_move = self._minimax_pruning(self.depth, -math.inf, math.inf, self.board.board.turn)
         #best_eval, best_move = self._minimax(self.depth, self.board.board.turn)
+
         return best_move
+
+    def _time_exceeded(self):
+        if self.time_limit is None:
+            return False
+        return (time.time() - self.start_time) >= self.time_limit
 
     def _evaluate(self):
         self.nodes_evaluated += 1
@@ -47,11 +68,24 @@ class MinimaxEngine:
             for color in [chess.WHITE, chess.BLACK]
         )
 
+        #pour accélérer le comptage des pièces via bitmask
+        # non_pawn_mask = (
+        #         board.pieces(chess.KNIGHT, chess.WHITE) |
+        #         board.pieces(chess.BISHOP, chess.WHITE) |
+        #         board.pieces(chess.ROOK, chess.WHITE) |
+        #         board.pieces(chess.QUEEN, chess.WHITE) |
+        #         board.pieces(chess.KNIGHT, chess.BLACK) |
+        #         board.pieces(chess.BISHOP, chess.BLACK) |
+        #         board.pieces(chess.ROOK, chess.BLACK) |
+        #         board.pieces(chess.QUEEN, chess.BLACK)
+        # )
+        # non_pawn_pieces = bin(non_pawn_mask).count("1")
+
         if non_pawn_pieces <= 5:
-            ending = True
+            self.ending = True
 
 
-        maps = Piece_map()
+        maps = Piece_map() #pourrait initialiser une fois pour accélérer
         eval = 0
         for piece_type in Piece_values:
             for color in [chess.WHITE, chess.BLACK]:
@@ -61,7 +95,7 @@ class MinimaxEngine:
                     if color == chess.WHITE:
                         eval += pst_value + Piece_values[piece_type]
                     else:
-                        eval -= pst_value - Piece_values[piece_type]
+                        eval -= pst_value + Piece_values[piece_type]
 
         return eval
 
@@ -143,6 +177,10 @@ class MinimaxEngine:
             move_piece = board.piece_type_at(move.from_square)
             move_capture_piece = board.piece_type_at(move.to_square)
 
+            #principle variation first
+            if self.pv_move is not None and move==self.pv_move:
+                move_score_guess += 100000
+
             #capture high piece with low piece
             if move_capture_piece is not None:
                 is_attacking = move.to_square in board.attacks(move.from_square)
@@ -153,7 +191,7 @@ class MinimaxEngine:
             if move.promotion is not None:
                 move_score_guess += Piece_values[move.promotion]
 
-            #move attacking own piece
+            #move where piece will be attacked
             if board.is_attacked_by(not board.turn, move.to_square):
                 move_score_guess -= Piece_values[move_piece]
 

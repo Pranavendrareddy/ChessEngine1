@@ -15,7 +15,7 @@ class UCI:
         #personal use
         if line == "printboard":
             print(self.board.board)
-        elif line == "movetime":
+        elif line == "timemove":
             print(self.move_time)
         elif line == "evalpos":
             print(self.positions_evaluated)
@@ -31,6 +31,7 @@ class UCI:
             self.set_position(line)
         elif line.startswith("go"):
             self.go()
+            #self.go_time_management(line)
         elif line == "ucinewgame":
             self.board.reset()
         elif line == "quit":
@@ -47,7 +48,9 @@ class UCI:
         if "startpos" in line_parts:
             self.board.reset()
         elif "fen" in line_parts:
-            self.board.set_fen(line_parts[line_parts.index("fen") + 1: moves_ind])
+            fen_tokens = line_parts[line_parts.index("fen") + 1: moves_ind]
+            fen = " ".join(fen_tokens)
+            self.board.set_fen(fen)
 
         if moves_ind is not None:
             for move in line_parts[moves_ind + 1:]:
@@ -64,4 +67,63 @@ class UCI:
             print(f"bestmove {self.board.uci(move)}")
         else:
             print("bestmove 0000")
+
+    def go_time_management(self, line):
+        movetime = None
+        wtime = btime = winc = binc = None
+        depth = None
+
+        parts = line.split()
+        for i, token in enumerate(parts):
+            if token == "movetime":
+                movetime = int(parts[i + 1]) / 1000.0  # ms → s
+            elif token == "wtime":
+                wtime = int(parts[i + 1]) / 1000.0
+            elif token == "btime":
+                btime = int(parts[i + 1]) / 1000.0
+            elif token == "winc":
+                winc = int(parts[i + 1]) / 1000.0
+            elif token == "binc":
+                binc = int(parts[i + 1]) / 1000.0
+            elif token == "depth":
+                depth = int(parts[i + 1])
+
+        # Decide time allocation
+        time_limit = self._decide_time(movetime, wtime, btime, winc, binc)
+
+        # set engine with depth + time
+        if depth is not None:
+            self.engine.depth = depth
+
+        self.engine.time_limit=time_limit
+
+
+        start_time = time.time()
+        best_move = self.engine.make_move()
+        end_time = time.time()
+        self.move_time = end_time - start_time
+        self.positions_evaluated = self.engine.nodes_evaluated
+
+        if best_move:
+            self.board.push(best_move)
+            print(f"bestmove {best_move.uci()}")
+        else:
+            print("bestmove 0000")
+
+    def _decide_time(self, movetime, wtime, btime, winc, binc):
+        if movetime:
+            return movetime
+
+        total_time = wtime if self.board.board.turn else btime
+        increment = winc if self.board.board.turn else binc
+
+        if total_time is None:
+            return None
+
+        # Spend 1/50 of remaining time + increment
+        time_for_move = total_time / 50.0 + max(0, increment)
+
+        # Cap at 50% of total time at end
+        return min(time_for_move, total_time * 0.5)
+
 

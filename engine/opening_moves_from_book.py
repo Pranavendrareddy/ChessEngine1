@@ -14,12 +14,12 @@ class Book_opening:
         current_fen = None
         for line in lines:
             line = line.strip()
+
             if line.startswith("pos"):
                 current_fen = line[4:]
                 opening_book[current_fen] = []
                 if self.startfen == '':
                     self.startfen = current_fen
-
             elif current_fen and line:
                 move, freq = line.split()
                 opening_book[current_fen].append((move, int(freq)))
@@ -32,6 +32,7 @@ class Book_opening:
         if fen in self.opening_book:
             moves = self.opening_book[fen]
             move_str, freq = random.choice(moves)
+            #move_str, freq = max(moves, key=lambda x: x[1])
             return chess.Move.from_uci(move_str)
         return None
 
