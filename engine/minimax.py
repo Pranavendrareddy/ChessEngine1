@@ -19,6 +19,13 @@ class MinimaxEngine:
         self.time_limit = time_limit
         self.start_time = None
         self.book_opening = Book_opening()
+        self.maps = {}
+        for piece_type in Piece_values:
+            self.maps[piece_type] = {}
+            self.maps[piece_type][False] = Piece_map()
+            self.maps[piece_type][False].gen_map(piece_type, False)
+            self.maps[piece_type][True] = Piece_map()
+            self.maps[piece_type][True].gen_map(piece_type, True)
 
     def make_move(self):
         if self.opening:
@@ -62,36 +69,37 @@ class MinimaxEngine:
         if board.is_stalemate() or board.is_insufficient_material():
             return 0
 
-        non_pawn_pieces = sum(
-            len(board.pieces(pt, color))
-            for pt in [chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN]
-            for color in [chess.WHITE, chess.BLACK]
-        )
+        # non_pawn_pieces = sum(
+        #     len(board.pieces(pt, color))
+        #     for pt in [chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN]
+        #     for color in [chess.WHITE, chess.BLACK]
+        # )
 
         #pour accélérer le comptage des pièces via bitmask
-        # non_pawn_mask = (
-        #         board.pieces(chess.KNIGHT, chess.WHITE) |
-        #         board.pieces(chess.BISHOP, chess.WHITE) |
-        #         board.pieces(chess.ROOK, chess.WHITE) |
-        #         board.pieces(chess.QUEEN, chess.WHITE) |
-        #         board.pieces(chess.KNIGHT, chess.BLACK) |
-        #         board.pieces(chess.BISHOP, chess.BLACK) |
-        #         board.pieces(chess.ROOK, chess.BLACK) |
-        #         board.pieces(chess.QUEEN, chess.BLACK)
-        # )
-        # non_pawn_pieces = bin(non_pawn_mask).count("1")
+        non_pawn_mask = (
+                board.pieces(chess.KNIGHT, chess.WHITE) |
+                board.pieces(chess.BISHOP, chess.WHITE) |
+                board.pieces(chess.ROOK, chess.WHITE) |
+                board.pieces(chess.QUEEN, chess.WHITE) |
+                board.pieces(chess.KNIGHT, chess.BLACK) |
+                board.pieces(chess.BISHOP, chess.BLACK) |
+                board.pieces(chess.ROOK, chess.BLACK) |
+                board.pieces(chess.QUEEN, chess.BLACK)
+        )
+        non_pawn_pieces = bin(non_pawn_mask).count("1")
 
         if non_pawn_pieces <= 5:
             self.ending = True
+            self.depth+=1
 
 
-        maps = Piece_map() #pourrait initialiser une fois pour accélérer
+        # initialiser une fois pour accélérer
         eval = 0
+
         for piece_type in Piece_values:
             for color in [chess.WHITE, chess.BLACK]:
-                maps.gen_map(piece_type, self.ending)
                 for square in board.pieces(piece_type, color):
-                    pst_value = maps.map[chess.square_file(square) + chess.square_rank(square) * 8]
+                    pst_value = self.maps[piece_type][self.ending].map[chess.square_file(square) + chess.square_rank(square) * 8]
                     if color == chess.WHITE:
                         eval += pst_value + Piece_values[piece_type]
                     else:

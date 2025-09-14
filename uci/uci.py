@@ -30,8 +30,8 @@ class UCI:
         elif line.startswith("position"):
             self.set_position(line)
         elif line.startswith("go"):
-            self.go()
-            #self.go_time_management(line)
+            #self.go()
+            self.go_time_management(line)
         elif line == "ucinewgame":
             self.board.reset()
         elif line == "quit":
