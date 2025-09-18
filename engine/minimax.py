@@ -2,6 +2,7 @@ import math
 from board.board import ChessBoard
 from engine.opening_moves_from_book import Book_opening
 from engine.piece_maps import Piece_map
+from engine.transposition import TranspositionTable
 import chess
 import time
 
@@ -19,6 +20,7 @@ class MinimaxEngine:
         self.time_limit = time_limit
         self.start_time = None
         self.book_opening = Book_opening()
+        self.ttable = TranspositionTable()
         self.maps = {}
         for piece_type in Piece_values:
             self.maps[piece_type] = {}
@@ -37,6 +39,8 @@ class MinimaxEngine:
 
 
         self.nodes_evaluated = 0
+
+        #iterative deepening and PV
         best_move = None
         best_eval = -math.inf if self.board.board.turn else math.inf
         self.start_time = time.time()
@@ -45,7 +49,7 @@ class MinimaxEngine:
 
             if self._time_exceeded():
                 break
-            eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
+            eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
             if move is not None:
                 best_eval = eval
                 best_move = move
@@ -174,6 +178,63 @@ class MinimaxEngine:
                 if beta<=alpha:
                     break
             return min_eval, best_move
+
+    def _minimax_pruning_tt(self, depth, alpha, beta, turn):
+
+        board = self.board.board
+        if depth == 0 or board.is_game_over():
+            return self._evaluate(), None
+
+        legal_moves_ordered = board.legal_moves
+        if self.order_moves:
+            legal_moves_ordered = self._move_order()
+
+
+        alpha_original = alpha
+        beta_original = beta
+        tt_entry = self.ttable.check_pos_in_table(board, depth, alpha, beta)
+        if tt_entry is not None:
+            return tt_entry["score"], tt_entry["bestmove"]
+
+        best_move = None
+        cur_eval = None
+        if turn:
+            max_eval = -math.inf
+            for move in legal_moves_ordered:
+                board.push(move)
+                eval, temp_move = self._minimax_pruning_tt(depth - 1, alpha, beta, not turn)
+                board.pop()
+                if eval > max_eval:
+                    max_eval = eval
+                    best_move = move
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            cur_eval = max_eval
+        else:
+            min_eval = math.inf
+            for move in board.legal_moves:
+                board.push(move)
+                eval, temp_move = self._minimax_pruning_tt(depth - 1, alpha, beta, not turn)
+                board.pop()
+                if eval < min_eval:
+                    min_eval = eval
+                    best_move = move
+                beta = min(beta, eval)
+                if beta<=alpha:
+                    break
+            cur_eval = min_eval
+
+        flag = "EXACT"
+        if cur_eval <= alpha_original:
+            flag = "UPPER"
+        elif cur_eval >= beta_original:
+            flag = "LOWER"
+
+
+        self.ttable.store(board, depth, cur_eval, flag, best_move)
+
+        return cur_eval, best_move
 
     def _move_order(self):
         board = self.board.board
