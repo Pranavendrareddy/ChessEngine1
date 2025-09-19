@@ -12,7 +12,10 @@ class MinimaxEngine:
     def __init__(self, board: ChessBoard, depth: int=3, time_limit: float=None):
         self.board = board
         self.depth = depth
+        self.olddepth = depth
         self.nodes_evaluated = 0
+        self.transpositions_found = 0
+        self.transpositions_used = 0
         self.order_moves = True
         self.ending = False
         self.opening = True
@@ -39,6 +42,7 @@ class MinimaxEngine:
 
 
         self.nodes_evaluated = 0
+        self.transpositions_found = 0
 
         #iterative deepening and PV
         best_move = None
@@ -94,10 +98,10 @@ class MinimaxEngine:
 
         if non_pawn_pieces <= 5:
             self.ending = True
-            self.depth+=1
+            self.depth = self.olddepth + 1
 
 
-        # initialiser une fois pour accélérer
+        # initialiser une fois les maps pour accélérer
         eval = 0
 
         for piece_type in Piece_values:
@@ -194,7 +198,10 @@ class MinimaxEngine:
         beta_original = beta
         tt_entry = self.ttable.check_pos_in_table(board, depth, alpha, beta)
         if tt_entry is not None:
-            return tt_entry["score"], tt_entry["bestmove"]
+            self.transpositions_found += 1
+            if tt_entry != 0:
+                self.transpositions_used += 1
+                return tt_entry["score"], tt_entry["bestmove"]
 
         best_move = None
         cur_eval = None

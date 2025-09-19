@@ -10,6 +10,8 @@ class UCI:
         #for the most recent move
         self.move_time = 0
         self.positions_evaluated = 0
+        self.foundtranspositions = 0
+        self.usedtranspositions = 0
 
     def handle_command(self, line):
         #personal use
@@ -19,6 +21,10 @@ class UCI:
             print(self.move_time)
         elif line == "evalpos":
             print(self.positions_evaluated)
+        elif line == "transpofound":
+            print(self.foundtranspositions)
+        elif line == "transpoused":
+            print(self.usedtranspositions)
 
         #uci
         if line == "uci":
@@ -62,6 +68,8 @@ class UCI:
         end_time = time.time()
         self.move_time = end_time - start_time
         self.positions_evaluated = self.engine.nodes_evaluated
+        self.foundtranspositions = self.engine.transpositions_found
+        self.usedtranspositions = self.engine.transpositions_used
         if move is not None:
             self.board.push(move)
             print(f"bestmove {self.board.uci(move)}")
@@ -103,6 +111,8 @@ class UCI:
         end_time = time.time()
         self.move_time = end_time - start_time
         self.positions_evaluated = self.engine.nodes_evaluated
+        self.foundtranspositions = self.engine.transpositions_found
+        self.usedtranspositions = self.engine.transpositions_used
 
         if best_move:
             self.board.push(best_move)
