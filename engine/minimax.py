@@ -44,6 +44,29 @@ class MinimaxEngine:
         self.nodes_evaluated = 0
         self.transpositions_found = 0
 
+        board = self.board.board
+        non_pawn_mask = (
+                board.pieces(chess.KNIGHT, chess.WHITE) |
+                board.pieces(chess.BISHOP, chess.WHITE) |
+                board.pieces(chess.ROOK, chess.WHITE) |
+                board.pieces(chess.QUEEN, chess.WHITE) |
+                board.pieces(chess.KNIGHT, chess.BLACK) |
+                board.pieces(chess.BISHOP, chess.BLACK) |
+                board.pieces(chess.ROOK, chess.BLACK) |
+                board.pieces(chess.QUEEN, chess.BLACK)
+        )
+        non_pawn_pieces = bin(non_pawn_mask).count("1")
+
+        if non_pawn_pieces <= 1:
+            self.ending = True
+            self.depth = self.olddepth + 4
+        elif non_pawn_pieces <= 2:
+            self.ending = True
+            self.depth = self.olddepth + 2
+        elif non_pawn_pieces <= 5:
+            self.ending = True
+            self.depth = self.olddepth + 1
+
         #iterative deepening and PV
         best_move = None
         best_eval = -math.inf if self.board.board.turn else math.inf
@@ -53,14 +76,16 @@ class MinimaxEngine:
 
             if self._time_exceeded():
                 break
+            #eval,move = self._minimax(self.depth, self.board.board.turn)
+            #eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
             eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
+
             if move is not None:
                 best_eval = eval
                 best_move = move
                 self.pv_move = move
 
-        #best_eval, best_move = self._minimax_pruning(self.depth, -math.inf, math.inf, self.board.board.turn)
-        #best_eval, best_move = self._minimax(self.depth, self.board.board.turn)
+
 
         return best_move
 
@@ -76,29 +101,6 @@ class MinimaxEngine:
             return -99999 if board.turn else 99999 #inf doesn't work, because gives up
         if board.is_stalemate() or board.is_insufficient_material():
             return 0
-
-        # non_pawn_pieces = sum(
-        #     len(board.pieces(pt, color))
-        #     for pt in [chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN]
-        #     for color in [chess.WHITE, chess.BLACK]
-        # )
-
-        #pour accélérer le comptage des pièces via bitmask
-        non_pawn_mask = (
-                board.pieces(chess.KNIGHT, chess.WHITE) |
-                board.pieces(chess.BISHOP, chess.WHITE) |
-                board.pieces(chess.ROOK, chess.WHITE) |
-                board.pieces(chess.QUEEN, chess.WHITE) |
-                board.pieces(chess.KNIGHT, chess.BLACK) |
-                board.pieces(chess.BISHOP, chess.BLACK) |
-                board.pieces(chess.ROOK, chess.BLACK) |
-                board.pieces(chess.QUEEN, chess.BLACK)
-        )
-        non_pawn_pieces = bin(non_pawn_mask).count("1")
-
-        if non_pawn_pieces <= 5:
-            self.ending = True
-            self.depth = self.olddepth + 1
 
 
         # initialiser une fois les maps pour accélérer
