@@ -12,8 +12,9 @@ class MinimaxEngine:
     def __init__(self, board: ChessBoard, depth: int=3, time_limit: float=None):
         self.board = board
         self.depth = depth
-        self.olddepth = depth
+        self.original_depth = depth
         self.nodes_evaluated = 0
+        self.nodes_searched = 0
         self.transpositions_found = 0
         self.transpositions_used = 0
         self.order_moves = True
@@ -22,6 +23,7 @@ class MinimaxEngine:
         self.pv_move = None
         self.time_limit = time_limit
         self.start_time = None
+        self.stop_search = False
         self.book_opening = Book_opening()
         self.ttable = TranspositionTable()
         self.maps = {}
@@ -42,7 +44,9 @@ class MinimaxEngine:
 
 
         self.nodes_evaluated = 0
+        self.nodes_searched = 0
         self.transpositions_found = 0
+        self.stop_search = False
 
         board = self.board.board
         non_pawn_mask = (
@@ -59,13 +63,13 @@ class MinimaxEngine:
 
         if non_pawn_pieces <= 1:
             self.ending = True
-            self.depth = self.olddepth + 4
+            self.depth = self.original_depth + 4
         elif non_pawn_pieces <= 2:
             self.ending = True
-            self.depth = self.olddepth + 2
+            self.depth = self.original_depth + 2
         elif non_pawn_pieces <= 5:
             self.ending = True
-            self.depth = self.olddepth + 1
+            self.depth = self.original_depth + 1
 
         #iterative deepening and PV
         best_move = None
@@ -76,9 +80,13 @@ class MinimaxEngine:
 
             if self._time_exceeded():
                 break
+
             #eval,move = self._minimax(self.depth, self.board.board.turn)
             #eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
             eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
+
+            if self.stop_search:
+                break
 
             if move is not None:
                 best_eval = eval
@@ -92,7 +100,11 @@ class MinimaxEngine:
     def _time_exceeded(self):
         if self.time_limit is None:
             return False
-        return (time.time() - self.start_time) >= self.time_limit
+        if (time.time() - self.start_time) >= self.time_limit:
+            print("hello")
+            self.stop_search = True
+            return True
+        return False
 
     def _evaluate(self):
         self.nodes_evaluated += 1
@@ -118,6 +130,15 @@ class MinimaxEngine:
         return eval
 
     def _minimax(self, depth, turn):
+        if self.stop_search:
+            return 0, None
+
+        self.nodes_searched += 1
+        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+            self.stop_search = True
+            self.nodes_searched -= 1
+            return 0, None
+
         board = self.board.board
         if depth == 0 or board.is_game_over():
             return self._evaluate(), None
@@ -149,6 +170,15 @@ class MinimaxEngine:
             return min_eval, best_move
 
     def _minimax_pruning(self, depth, alpha, beta, turn):
+        if self.stop_search:
+            return 0, None
+
+        self.nodes_searched += 1
+        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+            self.stop_search = True
+            self.nodes_searched -= 1
+            return 0, None
+
         board = self.board.board
         if depth == 0 or board.is_game_over():
             return self._evaluate(), None
@@ -186,6 +216,15 @@ class MinimaxEngine:
             return min_eval, best_move
 
     def _minimax_pruning_tt(self, depth, alpha, beta, turn):
+
+        if self.stop_search:
+            return 0, None
+
+        self.nodes_searched += 1
+        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+            self.stop_search = True
+            self.nodes_searched -= 1
+            return 0, None
 
         board = self.board.board
         if depth == 0 or board.is_game_over():

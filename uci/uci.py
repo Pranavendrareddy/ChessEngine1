@@ -12,6 +12,7 @@ class UCI:
         self.positions_evaluated = 0
         self.foundtranspositions = 0
         self.usedtranspositions = 0
+        self.positions_searched = 0
 
     def handle_command(self, line):
         #personal use
@@ -25,6 +26,8 @@ class UCI:
             print(self.foundtranspositions)
         elif line == "transpoused":
             print(self.usedtranspositions)
+        elif line == "searchpos":
+            print(self.positions_searched)
 
         #uci
         if line == "uci":
@@ -70,6 +73,7 @@ class UCI:
         self.positions_evaluated = self.engine.nodes_evaluated
         self.foundtranspositions = self.engine.transpositions_found
         self.usedtranspositions = self.engine.transpositions_used
+        self.positions_searched = self.engine.nodes_searched
         if move is not None:
             self.board.push(move)
             print(f"bestmove {self.board.uci(move)}")
@@ -113,6 +117,7 @@ class UCI:
         self.positions_evaluated = self.engine.nodes_evaluated
         self.foundtranspositions = self.engine.transpositions_found
         self.usedtranspositions = self.engine.transpositions_used
+        self.positions_searched = self.engine.nodes_searched
 
         if best_move:
             self.board.push(best_move)
