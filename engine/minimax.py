@@ -129,6 +129,66 @@ class MinimaxEngine:
 
         return eval
 
+    def _quiescence_search(self, alpha, beta, turn):
+
+        if self.stop_search:
+            return 0
+
+        self.nodes_searched += 1
+
+        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+            self.stop_search = True
+            self.nodes_searched -= 1
+            return 0
+
+        board = self.board.board
+
+        stand_pat = self._evaluate()
+
+        best_eval = stand_pat
+
+        if turn:
+            if best_eval >= beta:
+                return best_eval
+            elif best_eval > alpha:
+                alpha = best_eval
+
+        else:
+            if best_eval <= alpha:
+                return best_eval
+            elif best_eval < beta:
+                beta = best_eval
+
+
+        order_moves = self._order_quiescence_moves()
+
+        if turn:
+
+            for move in order_moves:
+                board.push(move)
+                score = self._quiescence_search(alpha, beta, not turn)
+                board.pop()
+
+                if score >= beta:
+                    return score
+                elif score > alpha:
+                    alpha = score
+                best_eval = max(best_eval, score)
+        else:
+            for move in order_moves:
+                board.push(move)
+                score = self._quiescence_search(alpha, beta, not turn)
+                board.pop()
+
+                if score <= alpha:
+                    return score
+                elif score < beta:
+                    beta = score
+                best_eval = min(best_eval, score)
+
+        return best_eval
+
+
     def _minimax(self, depth, turn):
         if self.stop_search:
             return 0, None
@@ -181,7 +241,7 @@ class MinimaxEngine:
 
         board = self.board.board
         if depth == 0 or board.is_game_over():
-            return self._evaluate(), None
+            return self._quiescence_search(alpha, beta, turn), None
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
@@ -228,7 +288,8 @@ class MinimaxEngine:
 
         board = self.board.board
         if depth == 0 or board.is_game_over():
-            return self._evaluate(), None
+            return self._quiescence_search(alpha, beta, turn), None
+            #return self._evaluate(), None
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
@@ -312,13 +373,42 @@ class MinimaxEngine:
             if board.is_attacked_by(not board.turn, move.to_square):
                 move_score_guess -= Piece_values[move_piece]
 
-            moves_scores.append(move_score_guess)
+            moves_scores.append((move_score_guess, move))
 
-        sorted_moves = [x for _,x in sorted(zip(moves_scores, moves), key=lambda x: x[0], reverse = True)]
+        moves_scores.sort(key=lambda x: x[0], reverse=True)
+
+        #sorted_moves = [x for _,x in sorted(zip(moves_scores, moves), key=lambda x: x[0], reverse = True)]
         #sorted_moves_scores = sorted(moves_scores)
 
         #return zip(sorted_moves, sorted_moves_scores)
-        return sorted_moves
+        return [move for score, move in moves_scores]
+    def _order_quiescence_moves(self):
+        board = self.board.board
+        moves = board.legal_moves
+
+        quiescence_moves = []
+        for move in moves:
+            if board.is_capture(move) or move.promotion is not None:
+                quiescence_moves.append(move)
+
+
+        moves_scores = []
+        for move in quiescence_moves:
+            move_piece = board.piece_type_at(move.from_square)
+            move_capture_piece = board.piece_type_at(move.to_square)
+
+            move_score_guess = 0
+
+            if move_capture_piece is not None:
+                move_score_guess = 10 * Piece_values[move_capture_piece] - Piece_values[move_piece]
+            if move.promotion is not None:
+                move_score_guess += Piece_values[move.promotion]
+
+            moves_scores.append((move_score_guess, move))
+
+        moves_scores.sort(key=lambda x: x[0], reverse=True)
+        return [move for score, move in moves_scores]
+
 
 
 
