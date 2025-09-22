@@ -3,6 +3,7 @@ from board.board import ChessBoard
 from engine.opening_moves_from_book import Book_opening
 from engine.piece_maps import Piece_map
 from engine.transposition import TranspositionTable
+from engine.move_ordering import MoveOrder
 import chess
 import time
 
@@ -26,6 +27,7 @@ class MinimaxEngine:
         self.stop_search = False
         self.book_opening = Book_opening()
         self.ttable = TranspositionTable()
+        self.move_order = MoveOrder()
         self.maps = {}
         for piece_type in Piece_values:
             self.maps[piece_type] = {}
@@ -160,7 +162,7 @@ class MinimaxEngine:
                 beta = best_eval
 
 
-        order_moves = self._order_quiescence_moves()
+        order_moves = self.move_order.order_quiescence_moves(board, Piece_values)
 
         if turn:
 
@@ -205,7 +207,7 @@ class MinimaxEngine:
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
-            legal_moves_ordered = self._move_order()
+            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values)
 
         best_move = None
         if turn:
@@ -245,7 +247,7 @@ class MinimaxEngine:
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
-            legal_moves_ordered = self._move_order()
+            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values, depth)
 
         best_move = None
         if turn:
@@ -259,6 +261,7 @@ class MinimaxEngine:
                     best_move = move
                 alpha = max(alpha, eval)
                 if beta <= alpha:
+                    self.move_order.store_killer_move(depth, move, board)
                     break
             return max_eval, best_move
         else:
@@ -272,6 +275,7 @@ class MinimaxEngine:
                     best_move = move
                 beta = min(beta, eval)
                 if beta<=alpha:
+                    self.move_order.store_killer_move(depth, move, board)
                     break
             return min_eval, best_move
 
@@ -293,7 +297,7 @@ class MinimaxEngine:
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
-            legal_moves_ordered = self._move_order()
+            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values, depth)
 
 
         alpha_original = alpha
@@ -318,6 +322,7 @@ class MinimaxEngine:
                     best_move = move
                 alpha = max(alpha, eval)
                 if beta <= alpha:
+                    self.move_order.store_killer_move(depth, move, board)
                     break
             cur_eval = max_eval
         else:
@@ -331,6 +336,7 @@ class MinimaxEngine:
                     best_move = move
                 beta = min(beta, eval)
                 if beta<=alpha:
+                    self.move_order.store_killer_move(depth, move, board)
                     break
             cur_eval = min_eval
 
@@ -345,69 +351,6 @@ class MinimaxEngine:
 
         return cur_eval, best_move
 
-    def _move_order(self):
-        board = self.board.board
-        moves = board.legal_moves
-        moves_scores = []
-
-        for move in moves:
-            move_score_guess = 0
-            move_piece = board.piece_type_at(move.from_square)
-            move_capture_piece = board.piece_type_at(move.to_square)
-
-            #principle variation first
-            if self.pv_move is not None and move==self.pv_move:
-                move_score_guess += 100000
-
-            #capture high piece with low piece
-            if move_capture_piece is not None:
-                is_attacking = move.to_square in board.attacks(move.from_square)
-                if is_attacking:
-                    move_score_guess = 10*Piece_values[move_capture_piece]- Piece_values[move_piece]
-
-            #promoting pawn
-            if move.promotion is not None:
-                move_score_guess += Piece_values[move.promotion]
-
-            #move where piece will be attacked
-            if board.is_attacked_by(not board.turn, move.to_square):
-                move_score_guess -= Piece_values[move_piece]
-
-            moves_scores.append((move_score_guess, move))
-
-        moves_scores.sort(key=lambda x: x[0], reverse=True)
-
-        #sorted_moves = [x for _,x in sorted(zip(moves_scores, moves), key=lambda x: x[0], reverse = True)]
-        #sorted_moves_scores = sorted(moves_scores)
-
-        #return zip(sorted_moves, sorted_moves_scores)
-        return [move for score, move in moves_scores]
-    def _order_quiescence_moves(self):
-        board = self.board.board
-        moves = board.legal_moves
-
-        quiescence_moves = []
-        for move in moves:
-            if board.is_capture(move) or move.promotion is not None:
-                quiescence_moves.append(move)
-
-
-        moves_scores = []
-        for move in quiescence_moves:
-            move_piece = board.piece_type_at(move.from_square)
-            move_capture_piece = board.piece_type_at(move.to_square)
-
-            move_score_guess = 0
-
-            if move_capture_piece is not None:
-                move_score_guess = 10 * Piece_values[move_capture_piece] - Piece_values[move_piece]
-            if move.promotion is not None:
-                move_score_guess += Piece_values[move.promotion]
-
-            moves_scores.append((move_score_guess, move))
-
-        moves_scores.sort(key=lambda x: x[0], reverse=True)
-        return [move for score, move in moves_scores]
 
 
 
