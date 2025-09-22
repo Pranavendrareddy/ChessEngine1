@@ -210,7 +210,7 @@ class MinimaxEngine:
         if self.repetition_table.is_repetition(board):
             return 0, None
 
-        if depth == 0 or board.is_game_over():
+        if depth == 0 or board.is_game_over() or board.is_repetition(3):
             return self._evaluate(), None
 
         legal_moves_ordered = board.legal_moves
@@ -256,7 +256,7 @@ class MinimaxEngine:
         board = self.board.board
         if self.repetition_table.is_repetition(board):
             return 0, None
-        if board.is_game_over():
+        if board.is_game_over() or board.is_repetition(3):
             return self._evaluate(), None
         if depth == 0:
             return self._quiescence_search(alpha, beta, turn), None
@@ -313,7 +313,7 @@ class MinimaxEngine:
         board = self.board.board
         if self.repetition_table.is_repetition(board):
             return 0, None
-        if board.is_game_over():
+        if board.is_game_over() or board.is_repetition(3):
             return self._evaluate(), None
         if depth == 0 or board.is_game_over():
             return self._quiescence_search(alpha, beta, turn), None
