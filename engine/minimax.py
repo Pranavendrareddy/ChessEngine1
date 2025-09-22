@@ -207,7 +207,7 @@ class MinimaxEngine:
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
-            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values)
+            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values, depth)
 
         best_move = None
         if turn:
@@ -350,11 +350,3 @@ class MinimaxEngine:
         self.ttable.store(board, depth, cur_eval, flag, best_move)
 
         return cur_eval, best_move
-
-
-
-
-
-
-
-
