@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a7ae09a-3a9e-477e-8e39-5c9a7dbd6028" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/engine/move_ordering.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/minimax.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine/minimax.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/move_ordering.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine/move_ordering.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/repetition.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine/repetition.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uci/uci.py" beforeDir="false" afterPath="$PROJECT_DIR$/uci/uci.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +38,9 @@
     &quot;accountId&quot;: &quot;eb7e6d08-7604-437f-aba3-23d3d9b473d6&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -91,6 +97,17 @@
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.bat" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ChessEngine1$main.coverage" NAME="main Coverage Results" MODIFIED="1745835631000" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

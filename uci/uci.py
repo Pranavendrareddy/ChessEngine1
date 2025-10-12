@@ -28,6 +28,12 @@ class UCI:
             print(self.usedtranspositions)
         elif line == "searchpos":
             print(self.positions_searched)
+        elif line == "debugmode":
+            self.engine.debug = not self.engine.debug
+            print(self.engine.debug)
+        elif line == "printtree":
+            self.engine.print_tree()
+
 
         #uci
         if line == "uci":
@@ -99,6 +105,7 @@ class UCI:
                 binc = int(parts[i + 1]) / 1000.0
             elif token == "depth":
                 depth = int(parts[i + 1])
+                print(depth)
 
         # Decide time allocation
         time_limit = self._decide_time(movetime, wtime, btime, winc, binc)
@@ -106,6 +113,7 @@ class UCI:
         # set engine with depth + time
         if depth is not None:
             self.engine.depth = depth
+            print(self.engine.depth)
 
         self.engine.time_limit=time_limit
 

@@ -9,12 +9,14 @@ import chess
 import time
 
 Piece_values = {chess.PAWN: 100, chess.KNIGHT: 300, chess.BISHOP: 300, chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000}
+MATE_SCORE = 999999
 
 class MinimaxEngine:
     def __init__(self, board: ChessBoard, depth: int=3, time_limit: float=None):
         self.board = board
         self.depth = depth
         self.original_depth = depth
+        self.call_depth = depth
         self.nodes_evaluated = 0
         self.nodes_searched = 0
         self.transpositions_found = 0
@@ -37,6 +39,9 @@ class MinimaxEngine:
             self.maps[piece_type][False].gen_map(piece_type, False)
             self.maps[piece_type][True] = Piece_map()
             self.maps[piece_type][True].gen_map(piece_type, True)
+        self.debug = False         # turn on to record search tree
+        self._tree_lines = []      # collected debug lines
+
 
     def make_move(self):
         if self.opening:
@@ -81,11 +86,16 @@ class MinimaxEngine:
         self.start_time = time.time()
 
         self.repetition_table.positions.clear()
+        self.repetition_table.add_position(self.board.board)
+        #clear killer moves table too
+        self.move_order.clear_killer_moves()
 
         for current_depth in range(1, self.depth + 1):
 
             if self._time_exceeded():
                 break
+
+            self.call_depth = current_depth
 
             #eval,move = self._minimax(self.depth, self.board.board.turn)
             #eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
@@ -100,23 +110,22 @@ class MinimaxEngine:
                 self.pv_move = move
 
 
-
         return best_move
 
     def _time_exceeded(self):
         if self.time_limit is None:
             return False
         if (time.time() - self.start_time) >= self.time_limit:
-            print("hello")
             self.stop_search = True
             return True
         return False
 
-    def _evaluate(self):
+    def _evaluate(self, ply_from_root):
         self.nodes_evaluated += 1
         board = self.board.board
         if board.is_checkmate():
-            return -999999 if board.turn else 999999 #inf doesn't work, because gives up
+            mate_score = MATE_SCORE - ply_from_root
+            return -mate_score if board.turn else mate_score #inf doesn't work, because gives up, can give + depth for faster mate privileges
         if board.is_stalemate() or board.is_insufficient_material():
             return 0
 
@@ -135,7 +144,10 @@ class MinimaxEngine:
 
         return eval
 
-    def _quiescence_search(self, alpha, beta, turn):
+    def _quiescence_search(self, alpha, beta, turn, ply_from_root):
+
+        # if pv_line is None:
+        #     pv_line = []
 
         if self.stop_search:
             return 0
@@ -149,7 +161,7 @@ class MinimaxEngine:
 
         board = self.board.board
 
-        stand_pat = self._evaluate()
+        stand_pat = self._evaluate(ply_from_root)
 
         best_eval = stand_pat
 
@@ -168,11 +180,15 @@ class MinimaxEngine:
 
         order_moves = self.move_order.order_quiescence_moves(board, Piece_values)
 
+        # if self.debug:
+        #     indent = "  " * (self.original_depth + 1)
+        #     self._tree_lines.append(f"{indent}QUIET depth standpat={stand_pat} PV={' '.join(pv_line)}")
+
         if turn:
 
             for move in order_moves:
                 board.push(move)
-                score = self._quiescence_search(alpha, beta, not turn)
+                score = self._quiescence_search(alpha, beta, not turn, ply_from_root+1)
                 board.pop()
 
                 if score >= beta:
@@ -183,7 +199,7 @@ class MinimaxEngine:
         else:
             for move in order_moves:
                 board.push(move)
-                score = self._quiescence_search(alpha, beta, not turn)
+                score = self._quiescence_search(alpha, beta, not turn, ply_from_root+1)
                 board.pop()
 
                 if score <= alpha:
@@ -208,10 +224,10 @@ class MinimaxEngine:
         board = self.board.board
 
         if self.repetition_table.is_repetition(board):
-            return 0, None
+            return 0, None #put after next if check
 
         if depth == 0 or board.is_game_over() or board.is_repetition(3):
-            return self._evaluate(), None
+            return self._evaluate(self.call_depth-depth), None
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
@@ -224,20 +240,20 @@ class MinimaxEngine:
                 board.push(move)
                 self.repetition_table.add_position(board)
                 eval, temp_move = self._minimax(depth - 1, not turn)
-                board.pop()
                 self.repetition_table.remove_position(board)
+                board.pop()
                 if eval > max_eval:
                     max_eval = eval
                     best_move = move
             return max_eval, best_move
         else:
             min_eval = math.inf
-            for move in board.legal_moves:
+            for move in legal_moves_ordered:
                 board.push(move)
                 self.repetition_table.add_position(board)
                 eval, temp_move = self._minimax(depth - 1, not turn)
-                board.pop()
                 self.repetition_table.remove_position(board)
+                board.pop()
                 if eval < min_eval:
                     min_eval = eval
                     best_move = move
@@ -254,12 +270,16 @@ class MinimaxEngine:
             return 0, None
 
         board = self.board.board
+
+        #print("Depth:", depth, "alpha:", alpha, "beta:", beta, "turn:", board.turn)
+
         if self.repetition_table.is_repetition(board):
             return 0, None
         if board.is_game_over() or board.is_repetition(3):
-            return self._evaluate(), None
+            return self._evaluate(self.call_depth-depth), None
         if depth == 0:
-            return self._quiescence_search(alpha, beta, turn), None
+            return self._quiescence_search(alpha, beta, turn, self.call_depth-depth), None
+            #return self._evaluate(self.call_depth-depth), None
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
@@ -271,9 +291,10 @@ class MinimaxEngine:
             for move in legal_moves_ordered:
                 board.push(move)
                 self.repetition_table.add_position(board)
+                #print("move: ", move, board.turn)
                 eval, temp_move = self._minimax_pruning(depth - 1, alpha, beta, not turn)
-                board.pop()
                 self.repetition_table.remove_position(board)
+                board.pop()
                 if eval > max_eval:
                     max_eval = eval
                     best_move = move
@@ -281,15 +302,17 @@ class MinimaxEngine:
                 if beta <= alpha:
                     self.move_order.store_killer_move(depth, move, board)
                     break
+            #print("max_eval:", max_eval, "best_move:", best_move)
             return max_eval, best_move
         else:
             min_eval = math.inf
-            for move in board.legal_moves:
+            for move in legal_moves_ordered:
                 board.push(move)
                 self.repetition_table.add_position(board)
+                #print("move: ", move, board.turn)
                 eval, temp_move = self._minimax_pruning(depth - 1, alpha, beta, not turn)
-                board.pop()
                 self.repetition_table.remove_position(board)
+                board.pop()
                 if eval < min_eval:
                     min_eval = eval
                     best_move = move
@@ -297,9 +320,14 @@ class MinimaxEngine:
                 if beta<=alpha:
                     self.move_order.store_killer_move(depth, move, board)
                     break
+
+            #print("min_eval:", min_eval, "best_move:", best_move)
             return min_eval, best_move
 
+
     def _minimax_pruning_tt(self, depth, alpha, beta, turn):
+        # if pv_line is None:
+        #     pv_line = []
 
         if self.stop_search:
             return 0, None
@@ -314,22 +342,26 @@ class MinimaxEngine:
         if self.repetition_table.is_repetition(board):
             return 0, None
         if board.is_game_over() or board.is_repetition(3):
-            return self._evaluate(), None
-        if depth == 0 or board.is_game_over():
-            return self._quiescence_search(alpha, beta, turn), None
-            #return self._evaluate(), None
+            return self._evaluate(self.call_depth-depth), None
+        if depth == 0:
+            return self._quiescence_search(alpha, beta, turn, self.call_depth-depth), None
+            #return self._evaluate(self.call_depth-depth), None
 
         legal_moves_ordered = board.legal_moves
         if self.order_moves:
             legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values, depth)
 
+        # if self.debug:
+        #     indent = "  " * (self.original_depth - depth)
+        #     self._tree_lines.append(
+        #         f"{indent}D={depth} turn={'W' if turn else 'B'} alpha={alpha} beta={beta} PV={' '.join(pv_line)}")
 
         alpha_original = alpha
         beta_original = beta
         tt_entry = self.ttable.check_pos_in_table(board, depth, alpha, beta)
-        if tt_entry is not None:
+        if tt_entry is not None: #no entry
             self.transpositions_found += 1
-            if tt_entry != 0:
+            if tt_entry != 0: #entry useful
                 self.transpositions_used += 1
                 return tt_entry["score"], tt_entry["bestmove"]
 
@@ -343,8 +375,8 @@ class MinimaxEngine:
 
                 eval, temp_move = self._minimax_pruning_tt(depth - 1, alpha, beta, not turn)
 
-                board.pop()
                 self.repetition_table.remove_position(board)
+                board.pop()
 
                 if eval > max_eval:
                     max_eval = eval
@@ -356,14 +388,14 @@ class MinimaxEngine:
             cur_eval = max_eval
         else:
             min_eval = math.inf
-            for move in board.legal_moves:
+            for move in legal_moves_ordered:
                 board.push(move)
                 self.repetition_table.add_position(board)
 
                 eval, temp_move = self._minimax_pruning_tt(depth - 1, alpha, beta, not turn)
 
-                board.pop()
                 self.repetition_table.remove_position(board)
+                board.pop()
 
                 if eval < min_eval:
                     min_eval = eval
@@ -383,4 +415,14 @@ class MinimaxEngine:
 
         self.ttable.store(board, depth, cur_eval, flag, best_move)
 
+        # if self.debug:
+        #     indent = "  " * (self.original_depth - depth)
+        #     bm = best_move.uci() if best_move else None
+        #     self._tree_lines.append(f"{indent}=> score={cur_eval} best={bm} PV={' '.join(pv_line)}")
+
         return cur_eval, best_move
+
+    def print_tree(self):
+        #print("Debug Trees")
+        for line in self._tree_lines:
+            print(line)

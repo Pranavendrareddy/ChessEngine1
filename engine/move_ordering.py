@@ -26,6 +26,9 @@ class MoveOrder:
 
         self.killer_moves[depth] = killers
 
+    def clear_killer_moves(self):
+        self.killer_moves.clear()
+
     def killer_score(self, move, depth):
         killers = self.killer_moves.get(depth, [])
         if move in killers:
@@ -47,12 +50,13 @@ class MoveOrder:
             #principle variation first
             if pv_move is not None and move==pv_move:
                 move_score_guess += PV_SCORE
+                #print("hi", pv_move)
 
             #capture high piece with low piece
             if move_capture_piece is not None:
                 is_attacking = move.to_square in board.attacks(move.from_square)
                 if is_attacking:
-                    move_score_guess = 10 * piece_values[move_capture_piece] - piece_values[move_piece]
+                    move_score_guess += 10 * piece_values[move_capture_piece] - piece_values[move_piece]
 
             #promoting pawn
             if move.promotion is not None:
@@ -64,6 +68,7 @@ class MoveOrder:
 
             #killer move score
             move_score_guess += self.killer_score(move, depth)
+
 
             moves_scores.append((move_score_guess, move))
 
