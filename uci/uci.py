@@ -9,10 +9,12 @@ class UCI:
         self.engine = MinimaxEngine(self.board)
         #for the most recent move
         self.move_time = 0
+        self.move = None
         self.positions_evaluated = 0
         self.foundtranspositions = 0
         self.usedtranspositions = 0
         self.positions_searched = 0
+        self.print = True
 
     def handle_command(self, line):
         #personal use
@@ -33,6 +35,8 @@ class UCI:
             print(self.engine.debug)
         elif line == "printtree":
             self.engine.print_tree()
+        elif line == "testing":
+            self.print = False
 
 
         #uci
@@ -82,8 +86,10 @@ class UCI:
         self.positions_searched = self.engine.nodes_searched
         if move is not None:
             self.board.push(move)
+            self.move = move
             print(f"bestmove {self.board.uci(move)}")
         else:
+            self.move = None
             print("bestmove 0000")
 
     def go_time_management(self, line):
@@ -129,9 +135,13 @@ class UCI:
 
         if best_move:
             self.board.push(best_move)
-            print(f"bestmove {best_move.uci()}")
+            self.move = best_move
+            if self.print:
+                print(f"bestmove {best_move.uci()}")
         else:
-            print("bestmove 0000")
+            self.move = None
+            if self.print:
+                print("bestmove 0000")
 
     def _decide_time(self, movetime, wtime, btime, winc, binc):
         if movetime:

@@ -98,8 +98,8 @@ class MinimaxEngine:
             self.call_depth = current_depth
 
             #eval,move = self._minimax(self.depth, self.board.board.turn)
-            #eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
-            eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
+            eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
+            #eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
 
             if self.stop_search:
                 break

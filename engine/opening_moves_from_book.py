@@ -1,13 +1,20 @@
 import random
 import chess
+import os
 
 class Book_opening:
     def __init__(self):
         self.startfen = ''
         self.opening_book = self._load_opening_book()
 
-    def _load_opening_book(self, path="resources/opening_book.txt"):
+    def _load_opening_book(self, path="../resources/opening_book.txt"):
+
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(base_dir, "../resources/opening_book.txt")
+
         opening_book = {}
+
+
         with open(path) as f:
             lines = f.readlines()
 
