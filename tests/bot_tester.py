@@ -42,7 +42,7 @@ def test_bot_on_file(uci, puzzle_file):
         bot_move = board.san(uci.move)
         print(bot_move, end = " ")
         print(f"time: {uci.move_time}", end = " ")
-        #print(f"Nodes eval={uci.positions_evaluated}, Transp found={uci.foundtranspositions}, Transp used={uci.usedtranspositions}, Positions searched={uci.positions_searched}\n")
+        #print(f"Nodes eval={uci.positions_evaluated}, Transp found={uci.found_transpositions}, Transp used={uci.used_transpositions}, Positions searched={uci.positions_searched}\n")
 
         if bot_move in best_move.split(" "):
             solved += 1

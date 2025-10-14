@@ -13,13 +13,14 @@ class TranspositionTable:
 
         if entry["depth"] >= depth:
             score, flag, bestmove = entry["score"], entry["flag"], entry["bestmove"]
+            loc_alpha, loc_beta = alpha, beta
             if flag == "EXACT":
                 return entry
             elif flag == "LOWER" and score > alpha:
-                alpha = score
+                loc_alpha = score
             elif flag == "UPPER" and score < beta:
-                beta = score
-            if alpha >= beta:
+                loc_beta = score
+            if loc_alpha >= loc_beta:
                 return entry
 
         return 0

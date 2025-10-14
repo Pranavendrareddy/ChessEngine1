@@ -10,10 +10,16 @@ import time
 
 Piece_values = {chess.PAWN: 100, chess.KNIGHT: 300, chess.BISHOP: 300, chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000}
 MATE_SCORE = 999999
+MAX_DEPTH = 32
+DEFAULT_DEPTH = 4
+NODE_TIME_CHECK = 2048
 
 class MinimaxEngine:
-    def __init__(self, board: ChessBoard, depth: int=3, time_limit: float=None):
+    def __init__(self, board: ChessBoard, depth: int=DEFAULT_DEPTH, time_limit: float=None, engine_type: int=0, move_ordering: bool=True, iterative_deepening: bool=True, quiescence: bool = True, opening: bool=True):
         self.board = board
+        self.engine_type = engine_type
+        self.quiescence = quiescence
+        self.iterative_deepening = iterative_deepening
         self.depth = depth
         self.original_depth = depth
         self.call_depth = depth
@@ -21,9 +27,9 @@ class MinimaxEngine:
         self.nodes_searched = 0
         self.transpositions_found = 0
         self.transpositions_used = 0
-        self.order_moves = True
+        self.order_moves = move_ordering
         self.ending = False
-        self.opening = True
+        self.opening = opening
         self.pv_move = None
         self.time_limit = time_limit
         self.start_time = None
@@ -55,6 +61,7 @@ class MinimaxEngine:
         self.nodes_evaluated = 0
         self.nodes_searched = 0
         self.transpositions_found = 0
+        self.transpositions_used = 0
         self.stop_search = False
 
         board = self.board.board
@@ -90,26 +97,48 @@ class MinimaxEngine:
         #clear killer moves table too
         self.move_order.clear_killer_moves()
 
-        for current_depth in range(1, self.depth + 1):
+        if self.time_limit is not None:  # if limit exists, bot should think as much as possible
+            self.depth = max(self.depth, MAX_DEPTH)
 
-            if self._time_exceeded():
-                break
+        if self.iterative_deepening:
 
-            self.call_depth = current_depth
+            for current_depth in range(1, self.depth):
 
-            #eval,move = self._minimax(self.depth, self.board.board.turn)
-            eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
-            #eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
+                if self._time_exceeded():
+                    break
 
-            if self.stop_search:
-                break
+                self.call_depth = current_depth
+                eval, move = None, None
 
-            if move is not None:
-                best_eval = eval
-                best_move = move
-                self.pv_move = move
+                #eval,move = self._minimax(self.depth, self.board.board.turn)
+                #eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
+                #eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
+                if self.engine_type == 0:
+                    eval, move = self._minimax_pruning_tt(current_depth, -math.inf, math.inf, self.board.board.turn)
+                elif self.engine_type == 1:
+                    eval, move = self._minimax_pruning(current_depth, -math.inf, math.inf, self.board.board.turn)
+                elif self.engine_type == 2:
+                    eval, move = self._minimax(current_depth, self.board.board.turn)
 
 
+                if self.stop_search:
+                    break
+
+                if move is not None:
+                    best_eval = eval
+                    best_move = move
+                    self.pv_move = move
+        else:
+            if self.engine_type == 0:
+                eval, best_move = self._minimax_pruning_tt(self.depth, -math.inf, math.inf, self.board.board.turn)
+            elif self.engine_type == 1:
+                eval, best_move = self._minimax_pruning(self.depth, -math.inf, math.inf, self.board.board.turn)
+            elif self.engine_type == 2:
+                eval, best_move = self._minimax(self.depth, self.board.board.turn)
+
+
+        if self.depth != DEFAULT_DEPTH:
+            self.depth = DEFAULT_DEPTH
         return best_move
 
     def _time_exceeded(self):
@@ -165,6 +194,9 @@ class MinimaxEngine:
 
         best_eval = stand_pat
 
+        if not self.quiescence:
+            return best_eval
+
         if turn:
             if best_eval >= beta:
                 return best_eval
@@ -216,7 +248,7 @@ class MinimaxEngine:
             return 0, None
 
         self.nodes_searched += 1
-        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+        if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
             return 0, None
@@ -264,7 +296,7 @@ class MinimaxEngine:
             return 0, None
 
         self.nodes_searched += 1
-        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+        if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
             return 0, None
@@ -333,7 +365,7 @@ class MinimaxEngine:
             return 0, None
 
         self.nodes_searched += 1
-        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+        if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
             return 0, None
@@ -346,10 +378,6 @@ class MinimaxEngine:
         if depth == 0:
             return self._quiescence_search(alpha, beta, turn, self.call_depth-depth), None
             #return self._evaluate(self.call_depth-depth), None
-
-        legal_moves_ordered = board.legal_moves
-        if self.order_moves:
-            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values, depth)
 
         # if self.debug:
         #     indent = "  " * (self.original_depth - depth)
@@ -364,6 +392,10 @@ class MinimaxEngine:
             if tt_entry != 0: #entry useful
                 self.transpositions_used += 1
                 return tt_entry["score"], tt_entry["bestmove"]
+
+        legal_moves_ordered = board.legal_moves
+        if self.order_moves:
+            legal_moves_ordered = self.move_order.order_moves(board, self.pv_move, Piece_values, depth)
 
         best_move = None
         cur_eval = None

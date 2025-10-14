@@ -4,15 +4,15 @@ from engine.random import RandomEngine
 import time
 
 class UCI:
-    def __init__(self):
+    def __init__(self, engine_type=0):
         self.board = ChessBoard()
-        self.engine = MinimaxEngine(self.board)
+        self.engine = MinimaxEngine(self.board, engine_type=engine_type)
         #for the most recent move
         self.move_time = 0
         self.move = None
         self.positions_evaluated = 0
-        self.foundtranspositions = 0
-        self.usedtranspositions = 0
+        self.found_transpositions = 0
+        self.used_transpositions = 0
         self.positions_searched = 0
         self.print = True
 
@@ -25,9 +25,9 @@ class UCI:
         elif line == "evalpos":
             print(self.positions_evaluated)
         elif line == "transpofound":
-            print(self.foundtranspositions)
+            print(self.found_transpositions)
         elif line == "transpoused":
-            print(self.usedtranspositions)
+            print(self.used_transpositions)
         elif line == "searchpos":
             print(self.positions_searched)
         elif line == "debugmode":
@@ -81,8 +81,8 @@ class UCI:
         end_time = time.time()
         self.move_time = end_time - start_time
         self.positions_evaluated = self.engine.nodes_evaluated
-        self.foundtranspositions = self.engine.transpositions_found
-        self.usedtranspositions = self.engine.transpositions_used
+        self.found_transpositions = self.engine.transpositions_found
+        self.used_transpositions = self.engine.transpositions_used
         self.positions_searched = self.engine.nodes_searched
         if move is not None:
             self.board.push(move)
@@ -111,7 +111,7 @@ class UCI:
                 binc = int(parts[i + 1]) / 1000.0
             elif token == "depth":
                 depth = int(parts[i + 1])
-                print(depth)
+                #print(depth)
 
         # Decide time allocation
         time_limit = self._decide_time(movetime, wtime, btime, winc, binc)
@@ -119,7 +119,7 @@ class UCI:
         # set engine with depth + time
         if depth is not None:
             self.engine.depth = depth
-            print(self.engine.depth)
+            #print(self.engine.depth)
 
         self.engine.time_limit=time_limit
 
@@ -129,8 +129,8 @@ class UCI:
         end_time = time.time()
         self.move_time = end_time - start_time
         self.positions_evaluated = self.engine.nodes_evaluated
-        self.foundtranspositions = self.engine.transpositions_found
-        self.usedtranspositions = self.engine.transpositions_used
+        self.found_transpositions = self.engine.transpositions_found
+        self.used_transpositions = self.engine.transpositions_used
         self.positions_searched = self.engine.nodes_searched
 
         if best_move:
