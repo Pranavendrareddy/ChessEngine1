@@ -13,38 +13,58 @@ MATE_SCORE = 999999
 MAX_DEPTH = 32
 DEFAULT_DEPTH = 4
 NODE_TIME_CHECK = 2048
+TIME_ABORT = object()
 
 class MinimaxEngine:
     def __init__(self, board: ChessBoard, depth: int=DEFAULT_DEPTH, time_limit: float=None, engine_type: int=0, move_ordering: bool=True, iterative_deepening: bool=True, quiescence: bool = True, opening: bool=True):
         self.board = board
+
         self.engine_type = engine_type
         self.quiescence = quiescence
         self.iterative_deepening = iterative_deepening
+
         self.depth = depth
         self.original_depth = depth
         self.call_depth = depth
+
         self.nodes_evaluated = 0
         self.nodes_searched = 0
         self.transpositions_found = 0
         self.transpositions_used = 0
+
         self.order_moves = move_ordering
         self.ending = False
         self.opening = opening
+
         self.pv_move = None
         self.time_limit = time_limit
         self.start_time = None
         self.stop_search = False
+
         self.book_opening = Book_opening()
         self.ttable = TranspositionTable()
         self.repetition_table = RepetitionTable()
+
         self.move_order = MoveOrder()
+
         self.maps = {}
         for piece_type in Piece_values:
-            self.maps[piece_type] = {}
-            self.maps[piece_type][False] = Piece_map()
-            self.maps[piece_type][False].gen_map(piece_type, False)
-            self.maps[piece_type][True] = Piece_map()
-            self.maps[piece_type][True].gen_map(piece_type, True)
+            self.maps[piece_type] = {}  # first level: piece_type
+            self.maps[piece_type][chess.WHITE] = {}  # second level: color
+            self.maps[piece_type][chess.BLACK] = {}  # second level: color
+
+            # White
+            self.maps[piece_type][chess.WHITE][False] = Piece_map()
+            self.maps[piece_type][chess.WHITE][False].gen_map(piece_type, False, chess.WHITE)
+            self.maps[piece_type][chess.WHITE][True] = Piece_map()
+            self.maps[piece_type][chess.WHITE][True].gen_map(piece_type, True, chess.WHITE)
+
+            # Black
+            self.maps[piece_type][chess.BLACK][False] = Piece_map()
+            self.maps[piece_type][chess.BLACK][False].gen_map(piece_type, False, chess.BLACK)
+            self.maps[piece_type][chess.BLACK][True] = Piece_map()
+            self.maps[piece_type][chess.BLACK][True].gen_map(piece_type, True, chess.BLACK)
+
         self.debug = False         # turn on to record search tree
         self._tree_lines = []      # collected debug lines
 
@@ -92,9 +112,15 @@ class MinimaxEngine:
         best_eval = -math.inf if self.board.board.turn else math.inf
         self.start_time = time.time()
 
+        #clear repetition table
         self.repetition_table.positions.clear()
         self.repetition_table.add_position(self.board.board)
-        #clear killer moves table too
+
+        #clear transposition table
+        #if len(self.ttable.table)>=100000:
+        self.ttable.table.clear()
+
+        #clear killer moves table
         self.move_order.clear_killer_moves()
 
         if self.time_limit is not None:  # if limit exists, bot should think as much as possible
@@ -120,14 +146,17 @@ class MinimaxEngine:
                 elif self.engine_type == 2:
                     eval, move = self._minimax(current_depth, self.board.board.turn)
 
-
                 if self.stop_search:
-                    break
+                    break #normalement pas mais evaluation imprécise
+
 
                 if move is not None:
                     best_eval = eval
                     best_move = move
+                    #print(move)
                     self.pv_move = move
+
+
         else:
             if self.engine_type == 0:
                 eval, best_move = self._minimax_pruning_tt(self.depth, -math.inf, math.inf, self.board.board.turn)
@@ -165,11 +194,14 @@ class MinimaxEngine:
         for piece_type in Piece_values:
             for color in [chess.WHITE, chess.BLACK]:
                 for square in board.pieces(piece_type, color):
-                    pst_value = self.maps[piece_type][self.ending].map[chess.square_file(square) + chess.square_rank(square) * 8]
+                    pst_value = self.maps[piece_type][color][self.ending].map[chess.square_file(square) + (7-chess.square_rank(square)) * 8]
+                    #print(chess.square_file(square), (7-chess.square_rank(square))*8)
                     if color == chess.WHITE:
                         eval += pst_value + Piece_values[piece_type]
+                        #print(pst_value, Piece_values[piece_type], "wh")
                     else:
                         eval -= pst_value + Piece_values[piece_type]
+                        #print(pst_value, Piece_values[piece_type], "bl")
 
         return eval
 
@@ -293,13 +325,13 @@ class MinimaxEngine:
 
     def _minimax_pruning(self, depth, alpha, beta, turn):
         if self.stop_search:
-            return 0, None
+            return TIME_ABORT, None
 
         self.nodes_searched += 1
         if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
-            return 0, None
+            return TIME_ABORT, None
 
         board = self.board.board
 
@@ -327,6 +359,9 @@ class MinimaxEngine:
                 eval, temp_move = self._minimax_pruning(depth - 1, alpha, beta, not turn)
                 self.repetition_table.remove_position(board)
                 board.pop()
+                if eval is TIME_ABORT:
+                    self.stop_search = True
+                    break
                 if eval > max_eval:
                     max_eval = eval
                     best_move = move
@@ -345,6 +380,10 @@ class MinimaxEngine:
                 eval, temp_move = self._minimax_pruning(depth - 1, alpha, beta, not turn)
                 self.repetition_table.remove_position(board)
                 board.pop()
+                if eval is TIME_ABORT:
+                    self.stop_search = True
+                    break
+
                 if eval < min_eval:
                     min_eval = eval
                     best_move = move

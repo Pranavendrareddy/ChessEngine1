@@ -3,8 +3,8 @@ from board.board import ChessBoard
 import chess
 import time
 
-engine1_tl = 250
-engine2_tl = 250
+engine1_tl = 2000
+engine2_tl = 2000
 
 puzzle_paths = ["../resources/eigenmann_rapid.epd", "../resources/wacnew_arasan.epd", "../resources/iq4_arasan.epd"]
 

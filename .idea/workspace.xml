@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7a7ae09a-3a9e-477e-8e39-5c9a7dbd6028" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/tests/match-tester.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/minimax.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine/minimax.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/piece_maps.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine/piece_maps.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/transposition.py" beforeDir="false" afterPath="$PROJECT_DIR$/engine/transposition.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/bot_tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/bot_tester.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/match-tester.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/match-tester.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_chesspy.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_chesspy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/uci/uci.py" beforeDir="false" afterPath="$PROJECT_DIR$/uci/uci.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -50,30 +51,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.bot_tester.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.match-tester.executor": "Run",
-    "Python.minimax.executor": "Run",
-    "Python.opening_moves_from_book.executor": "Run",
-    "Python.test_chesspy.executor": "Run",
-    "Python.transposition.executor": "Run",
-    "Python.uci.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/prana/PycharmProjects/ChessEngine1/resources",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.bot_tester.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.match-tester.executor&quot;: &quot;Run&quot;,
+    &quot;Python.minimax.executor&quot;: &quot;Run&quot;,
+    &quot;Python.opening_moves_from_book.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_chesspy.executor&quot;: &quot;Run&quot;,
+    &quot;Python.transposition.executor&quot;: &quot;Run&quot;,
+    &quot;Python.uci.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/prana/PycharmProjects/ChessEngine1/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\prana\PycharmProjects\ChessEngine1\resources" />

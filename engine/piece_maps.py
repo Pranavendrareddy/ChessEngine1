@@ -93,24 +93,44 @@ class Piece_map:
 
         self.map = []
 
-    def gen_map(self, piece, ending):
-        if piece == chess.PAWN:
-            if not ending:
-                self.map = self.Pawn
-            else:
-                self.map = self.Pawn_ending
-        elif piece == chess.KING:
-            if not ending:
-                self.map = self.King
-            else:
-                self.map = self.King_ending
-        elif piece == chess.QUEEN:
-            self.map = self.Queen
-        elif piece == chess.ROOK:
-            self.map = self.Rook
-        elif piece == chess.BISHOP:
-            self.map = self.Bishop
-        elif piece == chess.KNIGHT:
-            self.map = self.Knight
+    def gen_map(self, piece, ending, color):
+        if color == chess.WHITE:
+            if piece == chess.PAWN:
+                if not ending:
+                    self.map = self.Pawn
+                else:
+                    self.map = self.Pawn_ending
+            elif piece == chess.KING:
+                if not ending:
+                    self.map = self.King
+                else:
+                    self.map = self.King_ending
+            elif piece == chess.QUEEN:
+                self.map = self.Queen
+            elif piece == chess.ROOK:
+                self.map = self.Rook
+            elif piece == chess.BISHOP:
+                self.map = self.Bishop
+            elif piece == chess.KNIGHT:
+                self.map = self.Knight
+        else:
+            if piece == chess.PAWN:
+                if not ending:
+                    self.map = self.Pawn[::-1]
+                else:
+                    self.map = self.Pawn_ending[::-1]
+            elif piece == chess.KING:
+                if not ending:
+                    self.map = self.King[::-1]
+                else:
+                    self.map = self.King_ending[::-1]
+            elif piece == chess.QUEEN:
+                self.map = self.Queen[::-1]
+            elif piece == chess.ROOK:
+                self.map = self.Rook[::-1]
+            elif piece == chess.BISHOP:
+                self.map = self.Bishop[::-1]
+            elif piece == chess.KNIGHT:
+                self.map = self.Knight[::-1]
 
 

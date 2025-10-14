@@ -37,6 +37,9 @@ class UCI:
             self.engine.print_tree()
         elif line == "testing":
             self.print = False
+        elif line == "evaluatepos":
+            #pas bien mais pour debug
+            print(self.engine._evaluate(1))
 
 
         #uci
