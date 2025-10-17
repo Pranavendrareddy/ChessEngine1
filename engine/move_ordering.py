@@ -1,6 +1,6 @@
 import chess
 
-KILLER_SCORE = 50000
+KILLER_SCORE = 3500
 PV_SCORE = 100000
 
 class MoveOrder:
@@ -60,7 +60,7 @@ class MoveOrder:
 
             #promoting pawn
             if move.promotion is not None:
-                move_score_guess += piece_values[move.promotion]
+                move_score_guess += 10 * piece_values[move.promotion]
 
             #move where piece will be attacked
             if board.is_attacked_by(not board.turn, move.to_square):
@@ -99,7 +99,7 @@ class MoveOrder:
             if move_capture_piece is not None:
                 move_score_guess = 10 * piece_values[move_capture_piece] - piece_values[move_piece]
             if move.promotion is not None:
-                move_score_guess += piece_values[move.promotion]
+                move_score_guess += 10 * piece_values[move.promotion]
 
             moves_scores.append((move_score_guess, move))
 

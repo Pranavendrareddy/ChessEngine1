@@ -128,7 +128,7 @@ class MinimaxEngine:
 
         if self.iterative_deepening:
 
-            for current_depth in range(1, self.depth):
+            for current_depth in range(1, self.depth+1):
 
                 if self._time_exceeded():
                     break
@@ -146,8 +146,8 @@ class MinimaxEngine:
                 elif self.engine_type == 2:
                     eval, move = self._minimax(current_depth, self.board.board.turn)
 
-                if self.stop_search:
-                    break #normalement pas mais evaluation imprécise
+                #if self.stop_search:
+                    #break #normalement pas mais evaluation imprécise
 
 
                 if move is not None:
@@ -211,14 +211,14 @@ class MinimaxEngine:
         #     pv_line = []
 
         if self.stop_search:
-            return 0
+            return TIME_ABORT
 
         self.nodes_searched += 1
 
-        if self.nodes_searched % 2048 == 0 and self._time_exceeded():
+        if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
-            return 0
+            return TIME_ABORT
 
         board = self.board.board
 
@@ -254,6 +254,9 @@ class MinimaxEngine:
                 board.push(move)
                 score = self._quiescence_search(alpha, beta, not turn, ply_from_root+1)
                 board.pop()
+                if score is TIME_ABORT:
+                    self.stop_search = True
+                    break
 
                 if score >= beta:
                     return score
@@ -265,6 +268,9 @@ class MinimaxEngine:
                 board.push(move)
                 score = self._quiescence_search(alpha, beta, not turn, ply_from_root+1)
                 board.pop()
+                if score is TIME_ABORT:
+                    self.stop_search = True
+                    break
 
                 if score <= alpha:
                     return score
@@ -277,13 +283,13 @@ class MinimaxEngine:
 
     def _minimax(self, depth, turn):
         if self.stop_search:
-            return 0, None
+            return TIME_ABORT, None
 
         self.nodes_searched += 1
         if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
-            return 0, None
+            return TIME_ABORT, None
 
         board = self.board.board
 
@@ -306,9 +312,14 @@ class MinimaxEngine:
                 eval, temp_move = self._minimax(depth - 1, not turn)
                 self.repetition_table.remove_position(board)
                 board.pop()
+                if eval is TIME_ABORT:
+                    self.stop_search = True
+                    break
                 if eval > max_eval:
                     max_eval = eval
                     best_move = move
+            if max_eval == -math.inf:
+                return TIME_ABORT, None
             return max_eval, best_move
         else:
             min_eval = math.inf
@@ -318,9 +329,14 @@ class MinimaxEngine:
                 eval, temp_move = self._minimax(depth - 1, not turn)
                 self.repetition_table.remove_position(board)
                 board.pop()
+                if eval is TIME_ABORT:
+                    self.stop_search = True
+                    break
                 if eval < min_eval:
                     min_eval = eval
                     best_move = move
+            if min_eval == math.inf:
+                return TIME_ABORT, None
             return min_eval, best_move
 
     def _minimax_pruning(self, depth, alpha, beta, turn):
@@ -370,6 +386,8 @@ class MinimaxEngine:
                     self.move_order.store_killer_move(depth, move, board)
                     break
             #print("max_eval:", max_eval, "best_move:", best_move)
+            if max_eval == -math.inf:
+                return TIME_ABORT, None
             return max_eval, best_move
         else:
             min_eval = math.inf
@@ -393,6 +411,8 @@ class MinimaxEngine:
                     break
 
             #print("min_eval:", min_eval, "best_move:", best_move)
+            if min_eval == math.inf:
+                return TIME_ABORT, None
             return min_eval, best_move
 
 
@@ -401,13 +421,13 @@ class MinimaxEngine:
         #     pv_line = []
 
         if self.stop_search:
-            return 0, None
+            return TIME_ABORT, None
 
         self.nodes_searched += 1
         if self.nodes_searched % NODE_TIME_CHECK == 0 and self._time_exceeded():
             self.stop_search = True
             self.nodes_searched -= 1
-            return 0, None
+            return TIME_ABORT, None
 
         board = self.board.board
         if self.repetition_table.is_repetition(board):
@@ -449,6 +469,10 @@ class MinimaxEngine:
                 self.repetition_table.remove_position(board)
                 board.pop()
 
+                if eval is TIME_ABORT:
+                    self.stop_search = True
+                    break
+
                 if eval > max_eval:
                     max_eval = eval
                     best_move = move
@@ -456,6 +480,8 @@ class MinimaxEngine:
                 if beta <= alpha:
                     self.move_order.store_killer_move(depth, move, board)
                     break
+            if max_eval == -math.inf:
+                return TIME_ABORT, None
             cur_eval = max_eval
         else:
             min_eval = math.inf
@@ -468,6 +494,10 @@ class MinimaxEngine:
                 self.repetition_table.remove_position(board)
                 board.pop()
 
+                if eval is TIME_ABORT:
+                    self.stop_search = True
+                    break
+
                 if eval < min_eval:
                     min_eval = eval
                     best_move = move
@@ -475,6 +505,8 @@ class MinimaxEngine:
                 if beta<=alpha:
                     self.move_order.store_killer_move(depth, move, board)
                     break
+            if min_eval == math.inf:
+                return TIME_ABORT, None
             cur_eval = min_eval
 
         flag = "EXACT"

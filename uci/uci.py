@@ -56,6 +56,7 @@ class UCI:
             self.go_time_management(line)
         elif line == "ucinewgame":
             self.board.reset()
+            #reset engine?
         elif line == "quit":
             exit()
         else:
