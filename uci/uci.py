@@ -56,7 +56,8 @@ class UCI:
             self.go_time_management(line)
         elif line == "ucinewgame":
             self.board.reset()
-            #reset engine?
+            self.engine.reset_engine()
+
         elif line == "quit":
             exit()
         else:
@@ -161,6 +162,6 @@ class UCI:
         time_for_move = total_time / 50.0 + max(0, increment)
 
         # Cap at 50% of total time at end
-        return min(time_for_move, total_time * 0.5)
+        return min(time_for_move, total_time * 0.5 + increment)
 
 

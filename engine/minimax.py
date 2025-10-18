@@ -7,12 +7,14 @@ from engine.move_ordering import MoveOrder
 from engine.repetition import RepetitionTable
 import chess
 import time
+import sys
 
 Piece_values = {chess.PAWN: 100, chess.KNIGHT: 300, chess.BISHOP: 300, chess.ROOK: 500, chess.QUEEN: 900, chess.KING: 20000}
 MATE_SCORE = 999999
 MAX_DEPTH = 32
 DEFAULT_DEPTH = 4
 NODE_TIME_CHECK = 2048
+MAX_TT_SIZE_MB = 64
 TIME_ABORT = object()
 
 class MinimaxEngine:
@@ -34,7 +36,7 @@ class MinimaxEngine:
 
         self.order_moves = move_ordering
         self.ending = False
-        self.opening = opening
+        self.opening = True
 
         self.pv_move = None
         self.time_limit = time_limit
@@ -118,10 +120,11 @@ class MinimaxEngine:
 
         #clear transposition table
         #if len(self.ttable.table)>=100000:
-        self.ttable.table.clear()
+        if self.tt_too_large():
+            self.ttable.table.clear()
 
         #clear killer moves table
-        self.move_order.clear_killer_moves()
+        #self.move_order.clear_killer_moves()
 
         if self.time_limit is not None:  # if limit exists, bot should think as much as possible
             self.depth = max(self.depth, MAX_DEPTH)
@@ -525,7 +528,34 @@ class MinimaxEngine:
 
         return cur_eval, best_move
 
+    def tt_too_large(self):
+        size_bytes = sum(sys.getsizeof(k) + sys.getsizeof(v) for k, v in self.ttable.table.items())
+        size_mb = size_bytes / (1024 * 1024)
+        return size_mb > MAX_TT_SIZE_MB
+
     def print_tree(self):
         #print("Debug Trees")
         for line in self._tree_lines:
             print(line)
+
+    def reset_engine(self, time_reset: bool = True):
+
+        self.nodes_evaluated = 0
+        self.nodes_searched = 0
+        self.transpositions_found = 0
+        self.transpositions_used = 0
+
+        self.ending = False
+        self.opening = True
+
+        self.pv_move = None
+        if time_reset:
+            self.time_limit = None
+        self.start_time = None
+        self.stop_search = False
+
+        self.repetition_table.positions.clear()
+
+        self.ttable.table.clear()
+
+        self.move_order.clear_killer_moves()
