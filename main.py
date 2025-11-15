@@ -12,5 +12,5 @@ def main():
         print("Exiting ChessEngine1 UCI")
 
 if __name__ == "__main__":
-    print("Engine starting...")
+    #print("Engine starting...")
     main()

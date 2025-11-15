@@ -3,7 +3,7 @@ import chess
 
 puzzle_paths = ["../resources/eigenmann_rapid.epd", "../resources/wacnew_arasan.epd", "../resources/iq4_arasan.epd"]
 
-MAX_TIME = 1000
+MAX_TIME = 3000
 
 def parse_epd_line(line):
     if not line.strip() or "bm" not in line:

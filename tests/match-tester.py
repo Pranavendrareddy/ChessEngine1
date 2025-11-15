@@ -3,8 +3,8 @@ from board.board import ChessBoard
 import chess
 import time
 
-engine1_tl = 2000
-engine2_tl = 2000
+engine1_tl = 1000
+engine2_tl = 1000
 
 puzzle_paths = ["../resources/eigenmann_rapid.epd", "../resources/wacnew_arasan.epd", "../resources/iq4_arasan.epd"]
 fen_path = "../resources/match_fens.txt"
@@ -194,12 +194,16 @@ def tournament(engine_type1, engine_type2, games: int=10):
 
 if __name__ == '__main__':
     board = ChessBoard()
-    engine_type1 = MinimaxEngine(board, engine_type=0)
-    engine_type2 = MinimaxEngine(board, engine_type=1)
+    engine_type1 = MinimaxEngine(board, engine_type=2, quiescence=False, move_ordering=False)
+    engine_type2 = MinimaxEngine(board, engine_type=2, quiescence=False, move_ordering=False)
     engine_type1.time_limit = engine1_tl/1000
     engine_type2.time_limit = engine2_tl/1000
 
-    #results = tournament(engine_type1, engine_type2, games=2)
-    #results = tournament_epd(engine_type1, engine_type2, puzzle_paths[1], 5)
-    results = tournament_fen(engine_type1, engine_type2, fen_path, 5)
+    #results = tournament(engine_type1, engine_type2, games=1)
+    #print(results)
+
+    results = tournament_fen(engine_type1, engine_type2, fen_path, 3)
     print(results)
+    results = tournament_epd(engine_type1, engine_type2, puzzle_paths[1], 2)
+    print(results)
+

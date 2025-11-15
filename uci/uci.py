@@ -2,6 +2,7 @@ from board.board import ChessBoard
 from engine.minimax import MinimaxEngine
 from engine.random import RandomEngine
 import time
+import threading
 
 class UCI:
     def __init__(self, engine_type=0):
@@ -15,6 +16,7 @@ class UCI:
         self.used_transpositions = 0
         self.positions_searched = 0
         self.print = True
+        self.search_thread = None
 
     def handle_command(self, line):
         #personal use
@@ -57,7 +59,10 @@ class UCI:
         elif line == "ucinewgame":
             self.board.reset()
             self.engine.reset_engine()
-
+        elif line == "stop":
+            if self.search_thread and self.search_thread.is_alive():
+                self.engine.stop_search = True  # signal search to stop
+                self.search_thread.join()
         elif line == "quit":
             exit()
         else:
@@ -128,7 +133,13 @@ class UCI:
 
         self.engine.time_limit=time_limit
 
+        #thread move
+        self.search_thread = threading.Thread(target=self._searchprint_move)
+        self.search_thread.start()
 
+
+
+    def _searchprint_move(self):
         start_time = time.time()
         best_move = self.engine.make_move()
         end_time = time.time()
@@ -150,7 +161,7 @@ class UCI:
 
     def _decide_time(self, movetime, wtime, btime, winc, binc):
         if movetime:
-            return movetime
+            return movetime - 0.250
 
         total_time = wtime if self.board.board.turn else btime
         increment = winc if self.board.board.turn else binc
