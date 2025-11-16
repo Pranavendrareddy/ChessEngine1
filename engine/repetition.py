@@ -18,4 +18,5 @@ class RepetitionTable:
 
     def is_repetition(self, board):
         key = zobrist_hash(board)
+        #print("repetitions of pos:", self.positions.get(key, 0))
         return self.positions.get(key, 0) >= 2

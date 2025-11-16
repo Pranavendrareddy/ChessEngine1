@@ -438,9 +438,9 @@ class MinimaxEngine:
 
         #print("Depth:", depth, "alpha:", alpha, "beta:", beta, "turn:", board.turn)
 
-        if self.repetition_table.is_repetition(board):
+        if self.repetition_table.is_repetition(board) or board.is_repetition(3):
             return 0, None
-        if board.is_game_over() or board.is_repetition(3):
+        if board.is_game_over():
             return self._evaluate(self.call_depth - depth), None
         if depth == 0:
             return self._quiescence_search(alpha, beta, turn, self.call_depth - depth), None
